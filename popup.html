@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Easy Scrape</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --button-spacing: 6px;
+            --button-size: 38px; /* You can adjust this size as needed */
+        }
+        body { 
+            min-width: 570px; 
+            padding: 20px; 
+            font-family: 'Instrument Sans', sans-serif;
+            background-color: #121212;
+            color: white;
+        }
+        h1 {
+            color: white;
+            font-weight: normal;
+            margin-bottom: 10px;
+            font-size: 24px;
+            max-width: 60%; /* Reduce width to avoid overlap with dpad */
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: ellipsis; /* Ellipsis for overflow text */
+        }
+        label {
+            display: block;
+            margin-top: 10px; /* Adjust this value to move it down as needed */
+            max-width: 60%; /* Reduce width to avoid overlap with dpad */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .button {
+            padding: 10px 20px; 
+            border: none;
+            color: white;
+            background-color: #007BFF;
+            cursor: pointer; 
+            transition: background-color 0.3s ease; 
+            border-radius: 20px;
+            font-family: 'Instrument Sans', sans-serif;
+        }
+        .button:hover {
+            background-color: #0056b3; 
+        }
+        table {
+            width: 100%;
+            background-color: #222;
+            border-radius: 0px;
+            border-spacing: 0;
+            overflow: hidden;
+        }
+        #resultsTable th, td {
+            padding: 12px 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+            border: none;
+        }
+        th {
+            background-color: #333;
+            color: white;
+            font-weight: normal;
+            text-align: left;
+            border: none;
+        }
+        tr:nth-child(even) {
+            background-color: #333;
+            color: black;
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+            color: black;
+        }
+        .button-container {
+            display: flex;
+            align-items: flex-end;
+            margin-top: -30px; /* Lift button-container closer to the filter checkbox */
+        }
+        .button-stack {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .button-stack button {
+            height: calc((80px - 10px)/2);
+            padding: 0 20px;
+            border-radius: 10px; /* was 20px */
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 14px;
+        }
+        #actionButton.button {
+            margin-bottom: 10px;
+        }
+        #scrapeResultsContainer {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            background-color: #222;
+            border-radius: 10px;
+            padding: 10px 12px;
+            border-spacing: 0;
+            margin-bottom: 0;
+            height: 80px;
+            box-sizing: border-box;
+        }
+        #scrapeResultsContainer th {
+            padding-bottom: 5px;
+            color: white;
+            font-family: 'Instrument Sans', sans-serif;
+            text-align: center;
+            font-size: 15px;
+            border: none;
+            width: 65px;
+            height: 25px; /* was 30px */
+            background-color: #222;
+        }
+        #scrapeResultsContainer td {
+            padding: 5px 5px;
+            color: white;
+            /* font-weight: bold; */ 
+            font-family: 'Instrument Sans', sans-serif;
+            text-align: center;
+            font-size: 15px;
+            border: none;
+        }
+        #scrapeResultsContainer td#scrapeCount {
+            border-radius: 5px;
+            background-color: #333;
+        }
+        #scrapeResultsContainer td#resultCount {
+            border-radius: 5px;
+            background-color: #333;
+        }
+        #scrapeResultsContainer td.divider {
+            width: 6px;
+            padding: 0;
+            background-color: #222;
+        }
+        #resultsTable {
+            border-radius: 5px;
+            border: 5px solid #333;
+            overflow: hidden;
+            border-spacing: 0;
+            margin-top: 20px; /* Lift resultsTable closer to the buttons */
+        }
+        #resultsTable tr:nth-child(even) {
+            background-color: #eeeeee;
+            color: black;
+        }
+        .dpad-container {
+            position: relative;
+            width: calc(var(--button-size) * 3 + var(--button-spacing) * 2 + 20px);
+            height: calc(var(--button-size) * 3 + var(--button-spacing) * 2 + 20px);
+            background-color: #1d1d1d; /* Color circle */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .dpad-container button,
+        .center-button {
+            width: var(--button-size);
+            height: var(--button-size);
+            background-color: #333;
+            border-radius: 8px;
+            color: #666;;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: absolute;
+            border: none;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+        }
+        .dpad-container button:active {
+            background-color: #555;
+        }
+        .up-button {
+            top: 10px; /* Adjusted to center within the larger circle */
+            left: calc(50% - var(--button-size)/2);
+        }
+        .left-button {
+            top: calc(50% - var(--button-size)/2);
+            left: 10px; /* Adjusted to center within the larger circle */
+        }
+        .right-button {
+            top: calc(50% - var(--button-size)/2);
+            right: 10px; /* Adjusted to center within the larger circle */
+        }
+        .down-button {
+            bottom: 10px; /* Adjusted to center within the larger circle */
+            left: calc(50% - var(--button-size)/2);
+        }
+        .center-button {
+            background-color: #2b2b2b;
+            top: calc(50% - var(--button-size)/2);
+            left: calc(50% - var(--button-size)/2);
+            cursor: default;
+        }
+        .center-button:hover,
+        .center-button:active {
+            background-color: #2b2b2b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Maps Easy Scrape</h1>
+    <label>
+        <input type="checkbox" id="filterCheckbox"> Filter unique by Place ID
+    </label>
+    <div class="button-container">
+        <div id="scrapeResultsContainer">
+            <table>
+                <tr>
+                    <th id="scrapeHeader">Scrape</th>
+                    <td class="divider"></td>
+                    <th id="resultHeader">Results</th>
+                </tr>
+                <tr>
+                    <td id="scrapeCount">0</td>
+                    <td class="divider"></td>
+                    <td id="resultCount">0</td>
+                </tr>
+            </table>
+        </div>
+        <div class="button-stack">
+            <button id="actionButton" class="button" disabled>Scrape Google Maps</button>
+            <button id="downloadCsvButton" class="button" disabled>Download as CSV</button>
+        </div>
+
+        <!-- New D-Pad from button3.html -->
+        <div class="dpad-container">
+            <button class="up-button" id="upButton">▲</button>
+            <div class="center-button" id="centerButton"></div>
+            <button class="left-button" id="leftButton">◀</button>
+            <button class="right-button" id="rightButton">▶</button>
+            <button class="down-button" id="downButton">▼</button>
+        </div>
+    </div>
+    
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>Business Name</th>
+                <th>Phone Number</th>
+                <th>Rating</th>
+                <th>Reviews</th>
+                <th>Category</th>
+                <th>Website</th>
+                <th>Google Maps URL</th>
+                <th>Address</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <script src="popup.js"></script>
+    <script src="dpad.js"></script>
+</body>
+</html>
